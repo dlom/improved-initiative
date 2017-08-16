@@ -70,6 +70,7 @@ export default function (app: express.Express, statBlockLibrary: Library<StatBlo
         const options = pageRenderOptions(req.params.id);
         if (session.postedEncounter) {
             options.postedEncounter = JSON.stringify(session.postedEncounter);
+            delete session.postedEncounter;
         }
         res.render("tracker", options);
     });
@@ -108,10 +109,12 @@ export default function (app: express.Express, statBlockLibrary: Library<StatBlo
         const newViewId = initializeNewPlayerView(playerViews);
         const session: any = req.session;
 
-        if (typeof req.body.Combatants === "string") {
-            session.postedEncounter = { Combatants: JSON.parse(req.body.Combatants) };
+        const payload = (req.method === "POST" ? req.body : req.query);
+
+        if (typeof payload.Combatants === "string") {
+            session.postedEncounter = { Combatants: JSON.parse(payload.Combatants) };
         } else {
-            session.postedEncounter = req.body;
+            session.postedEncounter = payload;
         }
 
         res.redirect("/e/" + newViewId);
@@ -119,6 +122,8 @@ export default function (app: express.Express, statBlockLibrary: Library<StatBlo
 
     app.post("/launchencounter/", importEncounter);
     app.post("/importencounter/", importEncounter);
+    app.get("/launchencounter/", importEncounter);
+    app.get("/importencounter/", importEncounter);
 
     const url = process.env.PATREON_URL;
     if (url) {
