@@ -106,7 +106,7 @@ export default function (app: express.Express, statBlockLibrary: Library<StatBlo
     });
 
     const importEncounter = (req, res) => {
-        const newViewId = initializeNewPlayerView(playerViews);
+        const viewId = (req.params.id != null) ? req.params.id : initializeNewPlayerView(playerViews);
         const session: any = req.session;
 
         const payload = (req.method === "POST" ? req.body : req.query);
@@ -117,13 +117,18 @@ export default function (app: express.Express, statBlockLibrary: Library<StatBlo
             session.postedEncounter = payload;
         }
 
-        res.redirect("/e/" + newViewId);
+        res.redirect("/e/" + viewId);
     };
 
-    app.post("/launchencounter/", importEncounter);
-    app.post("/importencounter/", importEncounter);
-    app.get("/launchencounter/", importEncounter);
-    app.get("/importencounter/", importEncounter);
+    app.post("/launchencounter/:id?", importEncounter);
+    app.post("/importencounter/:id?", importEncounter);
+    app.get("/launchencounter/:id?", importEncounter);
+    app.get("/importencounter/:id?", importEncounter);
+
+    app.post("/createencounter/", (req, res) => {
+        const newViewId = initializeNewPlayerView(playerViews);
+        res.json({"encounterId": newViewId});
+    })
 
     const url = process.env.PATREON_URL;
     if (url) {
