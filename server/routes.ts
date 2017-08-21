@@ -69,7 +69,10 @@ export default function (app: express.Express, statBlockLibrary: Library<StatBlo
         const session: any = req.session;
         const options = pageRenderOptions(req.params.id);
         if (session.postedEncounter) {
-            options.postedEncounter = JSON.stringify(session.postedEncounter);
+            options.postedEncounter = JSON.stringify(session.postedEncounter, (key, value) => {
+                const isNumber = !isNaN(Number(value));
+                return (typeof key === "string" && isNumber) ? parseInt(value) : value;
+            });
             delete session.postedEncounter;
         }
         res.render("tracker", options);
